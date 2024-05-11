@@ -74,8 +74,6 @@ const client = new MongoClient(uri, {
         console.log(id,updated);
         const assigment = {
           $set: {
-
-            //...updated
             titleName: updated.titleName,
            description: updated.description,
             processingTime: updated.processingTime,
