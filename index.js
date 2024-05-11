@@ -36,16 +36,7 @@ const client = new MongoClient(uri, {
         const result = await cursor.toArray();
         res.send(result);
       });
-     // ------------------------------- extra
-  
-    //   app.get("/art", async (req, res) => {
-    //     const cursor = artCollection.find();
-    //     const result = await cursor.toArray();
-    //     res.send(result);
-    //   //  console.log(result);
-  
-    //   });
-  
+    
       //-------------------------------------------------------
   //4----data gulo update kora prothom dhap
       app.get("/assigment/:id", async (req, res) => {
@@ -85,16 +76,12 @@ const client = new MongoClient(uri, {
         const result = await assigmentCollection.updateOne(filter, assigment, options);
         res.send(result);
       });
-  
-  
       
-  
-  
        //------------------------------------------------------------------
   //3----data gulo delete kora
       app.delete("/assigment/:id", async (req, res) => {
         const id = req.params.id;
-        console.log("delete", id);
+      //  console.log("delete", id);
         const query = { _id: new ObjectId(id) };
         const result = await assigmentCollection.deleteOne(query);
         res.send(result);
