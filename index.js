@@ -4,9 +4,13 @@ const app = express();
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 //-----------------------
+const jwt =require("jsonwebtoken")
+const cookieParser = require("cookie-parser");
+//-----------------------
 
-app.use(cors({ origin: "*" }));
+app.use(cors({ origin: "*" }));  //change
 app.use(express.json());
+
 //-------------------------------
 require("dotenv").config();
 //-----------------------
