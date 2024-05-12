@@ -10,6 +10,7 @@ const cookieParser = require("cookie-parser");
 
 app.use(cors({ origin: "*" }));  //change
 app.use(express.json());
+app.use(cookieParser());
 
 //-------------------------------
 require("dotenv").config();
@@ -25,6 +26,9 @@ const client = new MongoClient(uri, {
   },
 });
 
+
+
+
 async function run() {
   try {
     //---------------------------------------------------------
@@ -32,6 +36,16 @@ async function run() {
     const assigmentCollection = client
       .db("assigmentDB")
       .collection("assigment");
+
+
+
+     //----------------------auth related api
+    //login.... jwtar 1st steap
+    app.post("/jwt", logger, async (req, res) => {
+        const user = req.body;
+        console.log("user token", user);
+       
+
 
     //-------------------------------
     //2---server ar data pora ba ui te dakhano
