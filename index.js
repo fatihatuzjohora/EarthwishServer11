@@ -4,11 +4,11 @@ const app = express();
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 //-----------------------
-const jwt =require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 //-----------------------
 
-app.use(cors({ origin: "*" }));  //change
+app.use(cors({ origin: ["http://localhost:5173"], credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -26,8 +26,12 @@ const client = new MongoClient(uri, {
   },
 });
 
-
-
+//middlewares nejr toire--start
+const logger = async (req, res, next) => {
+    console.log("called", req.host, req.originalUrl);
+    next();
+  };
+  //--end
 
 async function run() {
   try {
@@ -37,25 +41,20 @@ async function run() {
       .db("assigmentDB")
       .collection("assigment");
 
-
-
-     //----------------------auth related api
+    //----------------------auth related api
     //login.... jwtar 1st steap
-    app.post("/jwt", logger, async (req, res) => {
-        const user = req.body;
-        console.log("user token", user);
-        const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-            expiresIn: "1h",
-          });
-          res
-            .cookie("token", token, cookieOption)
-            .send({ success: true });
-        });
-
+    app.post("/jwt",logger, async (req, res) => {
+      const user = req.body;
+      console.log("user token", user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
+      });
+      res.cookie("token", token).send({ success: true });
+    });
 
     //-------------------------------
     //2---server ar data pora ba ui te dakhano
-    app.get("/assigment", async (req, res) => {
+    app.get("/assigment",logger, async (req, res) => {
       try {
         const { level } = req.query;
         let query = {};
@@ -85,7 +84,7 @@ async function run() {
 
     //------------------------------------------------
     //1--data server a dawa
-    app.post("/assigment", async (req, res) => {
+    app.post("/assigment",logger, async (req, res) => {
       const newAssigment = req.body;
       console.log(newAssigment);
       const result = await assigmentCollection.insertOne(newAssigment);
