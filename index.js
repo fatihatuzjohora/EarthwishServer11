@@ -1,14 +1,14 @@
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-require("dotenv").config();
-//-----------------------
 const express = require("express");
 const cors = require("cors");
 const app = express();
 const port = process.env.PORT || 5000;
-//-------------------------------
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+//-----------------------
 
 app.use(cors({ origin: "*" }));
 app.use(express.json());
+//-------------------------------
+require("dotenv").config();
 //-----------------------
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.qchb1so.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 //console.log(uri);
