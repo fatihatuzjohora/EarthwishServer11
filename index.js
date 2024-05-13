@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 //-----------------------
 
-app.use(cors({ origin: ["http://localhost:5173"], credentials: true }));
+app.use(cors({ origin: ["http://localhost:5174"], credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -28,33 +28,31 @@ const client = new MongoClient(uri, {
 
 //middlewares nejr toire--start
 const logger = async (req, res, next) => {
-    console.log("called", req.host, req.originalUrl);
-    next();
-  };
-  //--end
+  console.log("called", req.host, req.originalUrl);
+  next();
+};
+//--end
 
-  //token verifytoken
-  const verifyToken = async (req, res, next) => {
-    const token = req.cookies?.token;
-    // console.log('value of token in middleware', token);
-    if (!token) {
-      return res.status(401).send({ message: "not authorized" });
+//token verifytoken
+const verifyToken = async (req, res, next) => {
+  const token = req.cookies?.token;
+  // console.log('value of token in middleware', token);
+  if (!token) {
+    return res.status(401).send({ message: "not authorized" });
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    //error
+    if (err) {
+      console.log(err);
+      return res.status(401).send({ message: "unauthorixed" });
     }
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-      //error
-      if (err) {
-        console.log(err);
-        return res.status(401).send({ message: "unauthorixed" });
-      }
-      //if token is valid it would be decoded
-      console.log("value in the token", decoded);
-      req.user = decoded;
-      next();
-    });
-  };
-  //---end
-
-
+    //if token is valid it would be decoded
+    console.log("value in the token", decoded);
+    req.user = decoded;
+    next();
+  });
+};
+//---end
 
 async function run() {
   try {
@@ -64,9 +62,11 @@ async function run() {
       .db("assigmentDB")
       .collection("assigment");
 
+    const bidsCollection = client.db("assigmentDB").collection("bids");
+
     //----------------------auth related api
     //login.... jwtar 1st steap
-    app.post("/jwt",logger, async (req, res) => {
+    app.post("/jwt", logger, async (req, res) => {
       const user = req.body;
       console.log("user token", user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
@@ -75,9 +75,13 @@ async function run() {
       res.cookie("token", token).send({ success: true });
     });
 
+    // console.log("form valid token", req.user);
+    // if (req.query.email !== req.user.email) {
+    //   return res.status(403).send({ message: "forbidden access" });
+    // }
     //-------------------------------
     //2---server ar data pora ba ui te dakhano
-    app.get("/assigment",logger, async (req, res) => {
+    app.get("/assigment", logger, async (req, res) => {
       try {
         const { level } = req.query;
         let query = {};
@@ -135,6 +139,48 @@ async function run() {
       const result = await assigmentCollection.updateOne(
         filter,
         assigment,
+        options
+      );
+      res.send(result);
+    });
+
+    //------------------------------------------------------------------
+    //bids ar kaj start
+    app.post("/bids", async (req, res) => {
+      const bids = req.body;
+      const result = await bidsCollection.insertOne(bids);
+      res.send(result);
+    });
+
+    //bids get ar kaj
+    app.get("/bids", async (req, res) => {
+      const query = { status: { $eq: "pending" } };
+      const result = await bidsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.get("/bids/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await bidsCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.put("/bids/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updated = req.body;
+      const update = {
+        $set: {
+          givenMark: updated.givenMark,
+          feedBack: updated.feedBack,
+          status: updated.status,
+        },
+      };
+      const result = await bidsCollection.updateOne(
+        query,
+        update,
         options
       );
       res.send(result);
