@@ -33,6 +33,29 @@ const logger = async (req, res, next) => {
   };
   //--end
 
+  //token verifytoken
+  const verifyToken = async (req, res, next) => {
+    const token = req.cookies?.token;
+    // console.log('value of token in middleware', token);
+    if (!token) {
+      return res.status(401).send({ message: "not authorized" });
+    }
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+      //error
+      if (err) {
+        console.log(err);
+        return res.status(401).send({ message: "unauthorixed" });
+      }
+      //if token is valid it would be decoded
+      console.log("value in the token", decoded);
+      req.user = decoded;
+      next();
+    });
+  };
+  //---end
+
+
+
 async function run() {
   try {
     //---------------------------------------------------------
@@ -84,7 +107,7 @@ async function run() {
 
     //------------------------------------------------
     //1--data server a dawa
-    app.post("/assigment",logger, async (req, res) => {
+    app.post("/assigment", async (req, res) => {
       const newAssigment = req.body;
       console.log(newAssigment);
       const result = await assigmentCollection.insertOne(newAssigment);
