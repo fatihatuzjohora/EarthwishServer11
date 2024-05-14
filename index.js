@@ -8,7 +8,10 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 //-----------------------
 
-app.use(cors({ origin: ["http://localhost:5174"], credentials: true }));
+app.use(cors({ origin: [
+  "http://localhost:5173",
+],
+ credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -54,6 +57,17 @@ const verifyToken = async (req, res, next) => {
 };
 //---end
 
+//problem
+
+
+
+// const cookieOption={
+//   httpOnly: true,
+//   secure: process.env.NODE_ENV ==='production'? 'none': 'strict',
+//    sameSite:process.env.NODE_ENV ==='production'? true: false,
+// }
+
+
 async function run() {
   try {
     //---------------------------------------------------------
@@ -72,8 +86,21 @@ async function run() {
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "1h",
       });
-      res.cookie("token", token).send({ success: true });
+      res.cookie("token",
+      // cookieOption problem
+      token).send({ success: true });
     });
+
+     //logout....problem
+    //  app.post("/logout", async (req, res) => {
+    //   const user = req.body;
+    //   console.log("loging out ", user);
+    //   res.clearCookie("token",{...cookieOption, maxAge:0}).send({ success: true });
+    // });
+
+
+
+  //problem
 
     // console.log("form valid token", req.user);
     // if (req.query.email !== req.user.email) {
@@ -145,27 +172,28 @@ async function run() {
     });
 
     //------------------------------------------------------------------
-    //bids ar kaj start
+    //bids ar kaj start 1
     app.post("/bids", async (req, res) => {
       const bids = req.body;
       const result = await bidsCollection.insertOne(bids);
       res.send(result);
     });
 
-    //bids get ar kaj
+    //bids get ar kaj 2
     app.get("/bids", async (req, res) => {
       const query = { status: { $eq: "pending" } };
       const result = await bidsCollection.find(query).toArray();
       res.send(result);
     });
 
+    //bids get at kaj 3
     app.get("/bids/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await bidsCollection.findOne(query);
       res.send(result);
     });
-
+//---4
     app.put("/bids/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
