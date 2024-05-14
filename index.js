@@ -10,6 +10,8 @@ const cookieParser = require("cookie-parser");
 
 app.use(cors({ origin: [
   "http://localhost:5173",
+  'https://earthwish-c17dd.web.app',
+  'https://earthwish-c17dd.web.app',
 ],
  credentials: true }));
 app.use(express.json());
@@ -87,7 +89,7 @@ async function run() {
         expiresIn: "1h",
       });
       res.cookie("token",
-      // cookieOption problem
+     //  cookieOption,//problem
       token).send({ success: true });
     });
 
@@ -99,18 +101,21 @@ async function run() {
     // });
 
 
-
-  //problem
-
-    // console.log("form valid token", req.user);
-    // if (req.query.email !== req.user.email) {
-    //   return res.status(403).send({ message: "forbidden access" });
-    // }
     //-------------------------------
     //2---server ar data pora ba ui te dakhano
     app.get("/assigment", logger, async (req, res) => {
       try {
         const { level } = req.query;
+       
+       
+        //problem
+
+        // console.log("form valid token", req.user);
+        // if (req.query.email !== req.user.email) {
+        //   return res.status(403).send({ message: "forbidden access" });
+        // }
+
+
         let query = {};
 
         if (level && level.length > 0) {
