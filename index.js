@@ -230,6 +230,13 @@ async function run() {
     });
 
     //----------------------------------------------------------
+    //----------------------------------------------------------pagination start
+
+    app.get('/assigmentCount',async(req,res)=>{
+      const count=await assigmentCollection.estimatedDocumentCount()
+      res.send({count})
+    })
+    //----------------------------------------------------------end
 
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
