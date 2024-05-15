@@ -8,12 +8,16 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 //-----------------------
 
-app.use(cors({ origin: [
-  "http://localhost:5173",
-  'https://earthwish-c17dd.web.app',
-  'https://earthwish-c17dd.web.app',
-],
- credentials: true }));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://earthwish-c17dd.web.app",
+      "https://earthwish-c17dd.web.app",
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 
@@ -41,7 +45,7 @@ const logger = async (req, res, next) => {
 //token verifytoken
 const verifyToken = async (req, res, next) => {
   const token = req.cookies?.token;
-  // console.log('value of token in middleware', token);
+  console.log("value of token in middleware", token);
   if (!token) {
     return res.status(401).send({ message: "not authorized" });
   }
@@ -61,14 +65,11 @@ const verifyToken = async (req, res, next) => {
 
 //problem
 
-
-
-// const cookieOption={
-//   httpOnly: true,
-//   secure: process.env.NODE_ENV ==='production'? 'none': 'strict',
-//    sameSite:process.env.NODE_ENV ==='production'? true: false,
-// }
-
+const cookieOption = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production" ? "none" : "strict",
+  sameSite: process.env.NODE_ENV === "production" ? true : false,
+};
 
 async function run() {
   try {
@@ -88,49 +89,49 @@ async function run() {
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "1h",
       });
-      res.cookie("token",
-     //  cookieOption,//problem
-      token).send({ success: true });
+      res.cookie("token", token, cookieOption).send({ success: true });
     });
 
-     //logout....problem
-    //  app.post("/logout", async (req, res) => {
-    //   const user = req.body;
-    //   console.log("loging out ", user);
-    //   res.clearCookie("token",{...cookieOption, maxAge:0}).send({ success: true });
-    // });
-
+    // logout....
+    app.post("/logout", async (req, res) => {
+      const user = req.body;
+      console.log("loging out ", user);
+      res
+        .clearCookie("token", { ...cookieOption, maxAge: 0 })
+        .send({ success: true });
+    });
 
     //-------------------------------
+
     //2---server ar data pora ba ui te dakhano
-    app.get("/assigment", logger, async (req, res) => {
-      try {
-        const { level } = req.query;
-       
-       
-        //problem
+    app.get(
+      "/assigment",
+      // verifyToken,
+      async (req, res) => {
+        try {
+          const { level } = req.query;
 
-        // console.log("form valid token", req.user);
-        // if (req.query.email !== req.user.email) {
-        //   return res.status(403).send({ message: "forbidden access" });
-        // }
+          // console.log("form valid token", req.user);
+          // if (req.query.email !== req?.user.email) {
+          //   return res.status(403).send({ message: "forbidden access" });
+          // }
 
+          let query = {};
 
-        let query = {};
+          if (level && level.length > 0) {
+            query = { level: level }; // Assuming 'level' is a field in your MongoDB documents
+          }
 
-        if (level && level.length > 0) {
-          query = { level: level }; // Assuming 'level' is a field in your MongoDB documents
+          const cursor = await assigmentCollection.find(query);
+          const result = await cursor.toArray();
+
+          res.send(result);
+        } catch (error) {
+          console.error("Error fetching assignments:", error);
+          res.status(500).send("Internal Server Error");
         }
-
-        const cursor = await assigmentCollection.find(query);
-        const result = await cursor.toArray();
-
-        res.send(result);
-      } catch (error) {
-        console.error("Error fetching assignments:", error);
-        res.status(500).send("Internal Server Error");
       }
-    });
+    );
 
     //-------------------------------------------------------
     //4----data gulo update kora prothom dhap
@@ -185,7 +186,7 @@ async function run() {
     });
 
     //bids get ar kaj 2
-    app.get("/bids", async (req, res) => {
+    app.get("/bids/pending", async (req, res) => {
       const query = { status: { $eq: "pending" } };
       const result = await bidsCollection.find(query).toArray();
       res.send(result);
@@ -198,7 +199,7 @@ async function run() {
       const result = await bidsCollection.findOne(query);
       res.send(result);
     });
-//---4
+    //---4
     app.put("/bids/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -211,11 +212,14 @@ async function run() {
           status: updated.status,
         },
       };
-      const result = await bidsCollection.updateOne(
-        query,
-        update,
-        options
-      );
+      const result = await bidsCollection.updateOne(query, update, options);
+      res.send(result);
+    });
+    //------------------
+    app.get("/bid/:email", async (req, res) => {
+      const user = req.params.email;
+      const filter = { examineeEmail: user };
+      const result = await bidsCollection.find(filter).toArray();
       res.send(result);
     });
 
@@ -232,10 +236,10 @@ async function run() {
     //----------------------------------------------------------
     //----------------------------------------------------------pagination start
 
-    app.get('/assigmentCount',async(req,res)=>{
-      const count=await assigmentCollection.estimatedDocumentCount()
-      res.send({count})
-    })
+    app.get("/assigmentCount", async (req, res) => {
+      const count = await assigmentCollection.estimatedDocumentCount();
+      res.send({ count });
+    });
     //----------------------------------------------------------end
 
     console.log(
