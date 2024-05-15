@@ -37,7 +37,7 @@ const client = new MongoClient(uri, {
 
 //middlewares nejr toire--start
 const logger = async (req, res, next) => {
-  console.log("called", req.host, req.originalUrl);
+ // console.log("called", req.host, req.originalUrl);
   next();
 };
 //--end
@@ -45,7 +45,7 @@ const logger = async (req, res, next) => {
 //token verifytoken
 const verifyToken = async (req, res, next) => {
   const token = req.cookies?.token;
-  console.log("value of token in middleware", token);
+ // console.log("value of token in middleware", token);
   if (!token) {
     return res.status(401).send({ message: "not authorized" });
   }
@@ -56,7 +56,7 @@ const verifyToken = async (req, res, next) => {
       return res.status(401).send({ message: "unauthorixed" });
     }
     //if token is valid it would be decoded
-    console.log("value in the token", decoded);
+   // console.log("value in the token", decoded);
     req.user = decoded;
     next();
   });
@@ -85,7 +85,7 @@ async function run() {
     //login.... jwtar 1st steap
     app.post("/jwt", logger, async (req, res) => {
       const user = req.body;
-      console.log("user token", user);
+     // console.log("user token", user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "1h",
       });
@@ -95,7 +95,7 @@ async function run() {
     // logout....
     app.post("/logout", async (req, res) => {
       const user = req.body;
-      console.log("loging out ", user);
+     // console.log("loging out ", user);
       res
         .clearCookie("token", { ...cookieOption, maxAge: 0 })
         .send({ success: true });
@@ -146,7 +146,7 @@ async function run() {
     //1--data server a dawa
     app.post("/assigment", async (req, res) => {
       const newAssigment = req.body;
-      console.log(newAssigment);
+     // console.log(newAssigment);
       const result = await assigmentCollection.insertOne(newAssigment);
       res.send(result);
     });
@@ -158,7 +158,7 @@ async function run() {
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updated = req.body;
-      console.log(id, updated);
+    //  console.log(id, updated);
       const assigment = {
         $set: {
           titleName: updated.titleName,
